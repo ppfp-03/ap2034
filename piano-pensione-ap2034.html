@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Pensione 2034</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: rgba(0,0,0,0.09);
+  --border2: rgba(0,0,0,0.15);
+  --text: #1a1814;
+  --text2: #6b6660;
+  --text3: #9a9590;
+  --accent: #2c5f3f;
+  --accent-light: #e8f0eb;
+  --accent2: #8b4513;
+  --blue: #1a3a5c;
+  --blue-light: #e8eef5;
+  --red: #8b1a1a;
+  --red-light: #f5e8e8;
+  --gold: #b8860b;
+  --gold-light: #faf3e0;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── PIN SCREEN ── */
+#pin-screen {
+  position: fixed; inset: 0;
+  background: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  flex-direction: column;
+  gap: 2rem;
+}
+#pin-screen h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  color: #fff;
+  text-align: center;
+  line-height: 1.2;
+}
+#pin-screen p {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.pin-box {
+  display: flex; gap: 12px;
+}
+.pin-digit {
+  width: 52px; height: 64px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #fff;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  caret-color: transparent;
+}
+.pin-digit:focus { border-color: rgba(255,255,255,0.6); }
+.pin-error {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  min-height: 1.2em;
+}
+.pin-error.show { opacity: 1; }
+.pin-hint {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+}
+
+/* ── MAIN APP ── */
+#app { display: none; }
+
+header {
+  background: var(--text);
+  padding: 1.5rem 1.25rem 1.25rem;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-inner {
+  max-width: 720px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1rem, 3.5vw, 1.3rem);
+  color: #fff;
+  line-height: 1.2;
+}
+header p {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+.logout-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── NAV ── */
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+nav::-webkit-scrollbar { display: none; }
+.nav-inner {
+  max-width: 720px; margin: 0 auto;
+  display: flex;
+}
+.nav-btn {
+  padding: 14px 18px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text3);
+  border: none; background: none;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s, border-color 0.2s;
+}
+.nav-btn.active {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+/* ── CONTENT ── */
+main { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 1rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+.card-sub { font-size: 0.8rem; color: var(--text2); line-height: 1.6; }
+
+/* ── ASSUMPTION GRID ── */
+.ass-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+.ass-item {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.ass-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+.ass-value { font-weight: 500; }
+
+/* ── PLAN FLOW ── */
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1rem;
+}
+.flow-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+.flow-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  flex-shrink: 0;
+}
+.flow-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.flow-dot.ob { background: var(--gold); }
+.flow-connector {
+  width: 2px;
+  background: var(--border2);
+  flex: 1;
+  min-height: 8px;
+}
+.flow-content {
+  padding-bottom: 16px;
+  flex: 1;
+}
+.flow-year {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.flow-desc { font-size: 0.85rem; margin-top: 2px; }
+.flow-amount {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: 2px;
+}
+.flow-amount.ob { color: var(--gold); }
+
+/* ── CONTROLS ── */
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 480px) { .controls-grid { grid-template-columns: 1fr; } }
+.ctrl { display: flex; flex-direction: column; gap: 6px; }
+.ctrl-label { font-size: 0.75rem; color: var(--text2); }
+.ctrl-value { font-size: 1rem; font-weight: 500; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 4px;
+  background: var(--border2);
+  border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer; border: none;
+}
+
+/* ── METRICS ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+.metric {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.metric-label { font-size: 0.7rem; color: var(--text3); margin-bottom: 4px; }
+.metric-value { font-size: 1.2rem; font-weight: 500; }
+.metric-value.green { color: var(--accent); }
+.metric-value.blue { color: var(--blue); }
+.metric-value.gold { color: var(--gold); }
+
+/* ── PLAN COMPARISON CARDS ── */
+.plans-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.plan-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+}
+.plan-card.winner { border: 2px solid var(--accent); }
+.winner-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-light);
+  color: var(--accent);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.alt-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+.plan-name { font-weight: 500; font-size: 0.9rem; margin-bottom: 2px; }
+.plan-desc { font-size: 0.72rem; color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
+.plan-big { font-family: 'DM Serif Display', serif; font-size: 1.6rem; line-height: 1; margin-bottom: 2px; }
+.plan-big.green { color: var(--accent); }
+.plan-big.blue { color: var(--blue); }
+.plan-big-label { font-size: 0.68rem; color: var(--text3); margin-bottom: 12px; }
+.plan-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.75rem; padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.plan-row:last-child { border-bottom: none; }
+.plan-row span:last-child { font-weight: 500; }
+
+/* ── SENSITIVITY ── */
+.scen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+.scen-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.scen-card.active { border: 2px solid var(--blue); }
+.scen-title { font-size: 0.7rem; color: var(--text3); margin-bottom: 6px; font-weight: 500; }
+.scen-row { display: flex; justify-content: space-between; font-size: 0.72rem; padding: 2px 0; }
+.scen-row span:last-child { font-weight: 500; }
+.win { color: var(--accent); }
+.lose { color: var(--red); }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 520px; }
+th {
+  font-size: 0.68rem; font-weight: 500; color: var(--text3);
+  text-align: right; padding: 7px 8px;
+  border-bottom: 1px solid var(--border2);
+  white-space: nowrap;
+}
+th:first-child { text-align: center; }
+td {
+  text-align: right; padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+td:first-child { text-align: center; font-weight: 500; }
+tr.switch-row td { background: var(--blue-light); color: var(--blue); font-weight: 500; }
+tr.final-row td { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+tr:hover:not(.switch-row):not(.final-row) td { background: var(--surface2); }
+
+/* ── CHART ── */
+.chart-wrap { position: relative; width: 100%; height: 220px; margin-bottom: 1rem; }
+.chart-legend {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: 0.72rem; color: var(--text2);
+  margin-bottom: 8px;
+}
+.chart-legend span { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 10px; height: 3px; border-radius: 1px; display: inline-block; }
+
+/* ── VOLATILITY ── */
+.vol-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 1.25rem;
+}
+.vol-tab {
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.18s;
+}
+.vol-tab.active {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+.rates-row {
+  display: flex; gap: 4px;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+.rate-cell {
+  flex: 1; min-width: 52px;
+  background: var(--surface2);
+  border-radius: 6px;
+  padding: 7px 4px;
+  text-align: center;
+}
+.rate-yr { font-size: 0.62rem; color: var(--text3); margin-bottom: 3px; }
+.rate-val { font-size: 0.8rem; font-weight: 500; }
+.rate-val.pos { color: var(--accent); }
+.rate-val.neg { color: var(--red); }
+
+/* ── NOTE ── */
+.note {
+  background: var(--gold-light);
+  border: 1px solid rgba(184,134,11,0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+.note strong { color: var(--text); font-weight: 500; }
+
+.insight {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  color: var(--text2);
+}
+.insight strong { color: var(--text); font-weight: 500; }
+
+/* ── SUB TABS ── */
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 1rem; }
+.sub-tab {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+}
+.sub-tab.active {
+  background: var(--surface2);
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.section.active { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div>
+    <h1>Piano Pensione<br>Allianz Insieme</h1>
+    <p style="margin-top:8px;">Accesso riservato</p>
+  </div>
+  <div>
+    <div class="pin-box" id="pin-box">
+      <input class="pin-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      <input class="pin-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      <input class="pin-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      <input class="pin-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+    </div>
+    <div class="pin-error" id="pin-error">Codice errato. Riprova.</div>
+  </div>
+  <p class="pin-hint">Inserisci il codice di accesso</p>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>Piano Pensione — Allianz Insieme</h1>
+        <p>Simulatore privato · Orizzonte 10 anni</p>
+      </div>
+      <button class="logout-btn" onclick="logout()">Esci</button>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner">
+      <button class="nav-btn active" onclick="showSection('s-summary')">Riepilogo</button>
+      <button class="nav-btn" onclick="showSection('s-compare')">Confronto piani</button>
+      <button class="nav-btn" onclick="showSection('s-volatility')">Volatilità</button>
+      <button class="nav-btn" onclick="showSection('s-notes')">Note</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ══ SEZIONE 1: RIEPILOGO ══ -->
+    <div class="section active" id="s-summary">
+
+      <div class="section-label">Assunzioni del modello</div>
+
+      <div class="ass-grid">
+        <div class="ass-item"><div class="ass-label">Fondo</div><div class="ass-value">Allianz Insieme</div></div>
+        <div class="ass-item"><div class="ass-label">Orizzonte</div><div class="ass-value">10 anni</div></div>
+        <div class="ass-item"><div class="ass-label">Deducibilità annua</div><div class="ass-value">€ 5.300</div></div>
+        <div class="ass-item"><div class="ass-label">IRPEF marginale</div><div class="ass-value">43%</div></div>
+        <div class="ass-item"><div class="ass-label">Risparmio fiscale/anno</div><div class="ass-value">€ 2.279</div></div>
+        <div class="ass-item"><div class="ass-label">Glide path</div><div class="ass-value">7 az. + 3 ob.</div></div>
+        <div class="ass-item"><div class="ass-label">Tassazione uscita</div><div class="ass-value">15% (prudenziale)</div></div>
+        <div class="ass-item"><div class="ass-label">Costo adesione</div><div class="ass-value">€ 100</div></div>
+      </div>
+
+      <div class="section-label" style="margin-top:1.5rem;">Struttura del piano B (adottato)</div>
+
+      <div class="flow">
+        <div class="flow-row">
+          <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+          <div class="flow-content">
+            <div class="flow-year">Anno 0 — subito</div>
+            <div class="flow-desc">Versamento iniziale + costo adesione</div>
+            <div class="flow-amount">€ 11.000 miei + € 100 adesione → linea azionaria</div>
+          </div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+          <div class="flow-content">
+            <div class="flow-year">Anni 1 – 6 · fine anno</div>
+            <div class="flow-desc">Versamenti propri + risparmio fiscale anno precedente reinvestito</div>
+            <div class="flow-amount">€ 9.000 + € 2.279 = € 11.279/anno → linea azionaria</div>
+          </div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-line"><div class="flow-dot ob"></div><div class="flow-connector"></div></div>
+          <div class="flow-content">
+            <div class="flow-year">Anno 7 · fine anno — switch</div>
+            <div class="flow-desc">Ultimo contributo fiscale. Tutto il montante passa in linea obbligazionaria.</div>
+            <div class="flow-amount ob">€ 2.279 fiscali → linea obbligazionaria</div>
+          </div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-line"><div class="flow-dot ob"></div><div class="flow-connector"></div></div>
+          <div class="flow-content">
+            <div class="flow-year">Anni 8 – 9</div>
+            <div class="flow-desc">Nessun versamento. Crescita obbligazionaria sul montante.</div>
+            <div class="flow-amount ob">Solo capitalizzazione → linea obbligazionaria</div>
+          </div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-line"><div class="flow-dot ob"></div></div>
+          <div class="flow-content" style="padding-bottom:0;">
+            <div class="flow-year">Anno 10 · liquidazione</div>
+            <div class="flow-desc">Prestazione in capitale. Tassazione 15% sull'intero montante.</div>
+            <div class="flow-amount ob">Capitale netto in tasca</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Totale versato nel fondo:</strong> € 65.000 propri + € 13.674 fiscali (6 × € 2.279) = <strong>€ 78.674</strong>.<br>
+        Il risparmio fiscale è sfasato di un anno: il versamento dell'anno N genera il rimborso IRPEF che viene reinvestito all'anno N+1. L'ultimo contributo fiscale (competenza anno 6) entra nel fondo in anno 7, direttamente in linea obbligazionaria.
+      </div>
+
+      <div class="section-label" style="margin-top:1.5rem;">Correzioni stabilite nel modello</div>
+      <div class="card">
+        <div class="card-sub" style="font-size:0.82rem;">
+          <p style="margin-bottom:8px;">• I contributi fiscali cessano in sincronia con i versamenti propri (non continuano fino all'anno 10 come ipotizzato inizialmente). Totale corretto: 6 × 2.279 = € 13.674 anziché 10 × 2.279 = € 22.790.</p>
+          <p style="margin-bottom:8px;">• La tassazione al 15% applicata all'intero montante è una <strong>semplificazione prudenziale</strong>: nella realtà i contributi non dedotti (eccedenza oltre i € 5.300/anno) sono esenti. Il capitale netto reale sarà quindi superiore alla stima.</p>
+          <p>• L'anticipare i contributi fiscali allo stesso anno (Strategia A) vale circa € 1.400–1.600 netti in più rispetto al Piano B, ma richiede liquidità disponibile in anticipo rispetto al rimborso IRPEF.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEZIONE 2: CONFRONTO PIANI ══ -->
+    <div class="section" id="s-compare">
+
+      <div class="section-label">Parametri — modifica per aggiornare tutto</div>
+      <div class="controls-grid">
+        <div class="ctrl">
+          <label class="ctrl-label">Rendimento azionario netto (%/anno)</label>
+          <input type="range" min="4" max="12" step="0.5" value="8" id="rAz">
+          <span class="ctrl-value" id="rAzOut">8.0%</span>
+        </div>
+        <div class="ctrl">
+          <label class="ctrl-label">Rendimento obbligazionario netto (%/anno)</label>
+          <input type="range" min="0" max="4" step="0.1" value="1.2" id="rOb">
+          <span class="ctrl-value" id="rObOut">1.2%</span>
+        </div>
+        <div class="ctrl">
+          <label class="ctrl-label">Aliquota liquidazione finale (%)</label>
+          <input type="range" min="9" max="23" step="1" value="15" id="tax">
+          <span class="ctrl-value" id="taxOut">15%</span>
+        </div>
+      </div>
+
+      <div class="section-label">Risultati — scenario corrente</div>
+      <div class="plans-grid" id="plansGrid"></div>
+      <div class="metrics-grid" id="metricsGrid"></div>
+
+      <div class="section-label">Sensitivity — 6% / 8% / 10% azionario</div>
+      <div class="scen-grid" id="scenGrid"></div>
+
+      <div class="section-label">Dettaglio anno per anno</div>
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="showSubTab('tabB')">Piano B</button>
+        <button class="sub-tab" onclick="showSubTab('tabLS')">Una tantum</button>
+        <button class="sub-tab" onclick="showSubTab('tabChart')">Grafico</button>
+      </div>
+
+      <div id="tabB">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Anno</th><th>Cap. iniziale</th><th>Miei</th><th>Fiscali</th><th>Tasso</th><th>Interessi</th><th>Cap. finale</th>
+            </tr></thead>
+            <tbody id="tbodyB"></tbody>
+          </table>
+        </div>
+        <div class="note">Riga blu = switch azionaria → obbligazionaria (anno 7). I contributi fiscali entrano con 1 anno di ritardo rispetto a quelli propri.</div>
+      </div>
+
+      <div id="tabLS" style="display:none;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Anno</th><th>Cap. iniziale</th><th>Versamento</th><th>Tasso</th><th>Interessi</th><th>Cap. finale</th>
+            </tr></thead>
+            <tbody id="tbodyLS"></tbody>
+          </table>
+        </div>
+        <div class="note">Versamento unico € 65.000 al tempo 0. Nessun reinvestimento fiscale. Il capitale pieno lavora da subito ma non beneficia del dollar-cost averaging.</div>
+      </div>
+
+      <div id="tabChart" style="display:none;">
+        <div class="chart-legend">
+          <span><span class="leg-dot" style="background:#1a3a5c;"></span>Piano B</span>
+          <span><span class="leg-dot" style="background:#2c5f3f;border-top:2px dashed #2c5f3f;height:0;"></span>Una tantum</span>
+        </div>
+        <div class="chart-wrap"><canvas id="growthChart" role="img" aria-label="Crescita montante lordo: Piano B vs una tantum"></canvas></div>
+        <div class="note">Il piano B parte più lento (versamenti scaglionati) ma i € 13.674 di contributi fiscali aggiuntivi permettono di raggiungere o superare la una tantum.</div>
+      </div>
+
+    </div>
+
+    <!-- ══ SEZIONE 3: VOLATILITÀ ══ -->
+    <div class="section" id="s-volatility">
+
+      <div class="section-label">Scenario di mercato</div>
+      <div class="vol-tabs">
+        <button class="vol-tab active" onclick="selectVol(0)">Crash iniziale</button>
+        <button class="vol-tab" onclick="selectVol(1)">Boom poi correzione</button>
+        <button class="vol-tab" onclick="selectVol(2)">V-Shape violento</button>
+        <button class="vol-tab" onclick="selectVol(3)">Laterale con spike</button>
+        <button class="vol-tab" onclick="selectVol(4)">Costante 8%</button>
+      </div>
+
+      <div class="section-label">Rendimenti annui azionari (anni 0–6)</div>
+      <div class="rates-row" id="ratesRow"></div>
+
+      <div class="insight" id="volInsight"></div>
+
+      <div class="section-label">Risultati sotto stress</div>
+      <div class="plans-grid" id="volPlansGrid"></div>
+      <div class="metrics-grid" id="volMetricsGrid"></div>
+
+      <div class="section-label">Crescita montante lordo</div>
+      <div class="chart-legend">
+        <span><span class="leg-dot" style="background:#1a3a5c;"></span>Piano B (PAC)</span>
+        <span><span class="leg-dot" style="background:#2c5f3f;"></span>Una tantum (PIC)</span>
+      </div>
+      <div class="chart-wrap"><canvas id="volChart" role="img" aria-label="Crescita montante lordo sotto volatilità: Piano B vs una tantum"></canvas></div>
+
+      <div class="section-label" style="margin-top:1rem;">Rendimento azionario anno per anno</div>
+      <div style="position:relative;width:100%;height:150px;margin-bottom:1rem;">
+        <canvas id="barChart" role="img" aria-label="Rendimento azionario anno per anno nello scenario selezionato"></canvas>
+      </div>
+
+      <div class="note">Rendimento obbligazionario fisso all'1,2% netto per gli anni 7–9. Tassazione finale 15% sull'intero montante. I rendimenti azionari sono netti di costi di gestione e imposta sostitutiva (11%), coerentemente con le ipotesi del piano.</div>
+
+    </div>
+
+    <!-- ══ SEZIONE 4: NOTE ══ -->
+    <div class="section" id="s-notes">
+
+      <div class="section-label">Note metodologiche</div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Rendimenti azionari — è realistico l'8%?</div>
+        <div class="card-sub">
+          I dati COVIP sulle linee azionarie dei fondi pensione italiani mostrano rendimenti medi a 10 anni tra il 6% e il 9% netti. L'8% è nella fascia alta del ragionevole: uno scenario base prudente è 6–7%. Il 10% è uno scenario ottimistico ma non impossibile per periodi con mercati favorevoli. In ogni caso tutti i valori nel simulatore sono "netti" — già al netto di TER del fondo, costi di gestione e imposta sostitutiva dell'11% sui rendimenti maturati.
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Tassazione in uscita — perché il 15% è conservativo</div>
+        <div class="card-sub">
+          L'aliquota del 15% si applica ai contributi dedotti (max € 5.300/anno) e ai rendimenti maturati. I contributi non dedotti (eccedenza oltre i € 5.300) sono restituiti esenti. Il modello applica il 15% all'intero montante per semplicità: questo sovrastima l'imposta, rendendo il capitale netto stimato inferiore a quello reale. Con 10 anni di adesione l'aliquota resta al 15% — si riduce dello 0,30% per ogni anno oltre il 15° di partecipazione, fino al minimo del 9%.
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Dollar-cost averaging — quando funziona davvero</div>
+        <div class="card-sub">
+          Il PAC (piano di accumulo) batte il PIC (investimento in capitale) quando la volatilità è alta e i ribassi arrivano nei primi anni dell'investimento. Il meccanismo: i versamenti periodici comprano più quote quando i prezzi sono bassi, abbassando il costo medio di carico. Il PIC invece è ottimale se il mercato sale subito dopo l'investimento iniziale. Su orizzonti di 7 anni in azionaria, la storia statistica premia il PAC in presenza di volatilità — che è esattamente il caso del Piano B.
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">Limitazioni del modello</div>
+        <div class="card-sub">
+          <p style="margin-bottom:6px;">• Rendimento costante anno per anno: nella realtà la volatilità è molto più alta. Il simulatore di volatilità mostra scenari discreti ma non una distribuzione probabilistica completa.</p>
+          <p style="margin-bottom:6px;">• TFR non incluso: se si conferisce anche il TFR al fondo pensione, i numeri cambiano significativamente (ma anche i limiti di deducibilità si computano diversamente).</p>
+          <p style="margin-bottom:6px;">• Inflazione non modellata: i valori nominali mostrati non sono deflazionati. In termini reali il potere d'acquisto sarà inferiore in funzione dell'inflazione del decennio.</p>
+          <p>• Questo strumento non costituisce consulenza fiscale o finanziaria. Per decisioni definitive consultare un consulente abilitato e la documentazione ufficiale Allianz/COVIP.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Normativa di riferimento:</strong> Legge di Bilancio 2026 (limite deducibilità € 5.300). D.Lgs. 252/2005 (disciplina forme pensionistiche complementari). Aliquota minima 9% dopo 35 anni di adesione. Imposta sostitutiva sui rendimenti: 11% (agevolata rispetto al 26% degli strumenti ordinari).
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// PIN
+// ═══════════════════════════════════════
+const CORRECT = '0407';
+const digits = document.querySelectorAll('.pin-digit');
+
+digits.forEach((d, i) => {
+  d.addEventListener('input', e => {
+    const v = d.value.replace(/\D/g,'');
+    d.value = v.slice(-1);
+    if (d.value && i < digits.length-1) digits[i+1].focus();
+    checkPin();
+  });
+  d.addEventListener('keydown', e => {
+    if (e.key==='Backspace' && !d.value && i>0) { digits[i-1].focus(); digits[i-1].value=''; }
+  });
+  d.addEventListener('paste', e => {
+    e.preventDefault();
+    const p = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+    p.split('').slice(0,4).forEach((c,j) => { if(digits[j]) digits[j].value=c; });
+    checkPin();
+  });
+});
+
+function checkPin() {
+  const val = Array.from(digits).map(d=>d.value).join('');
+  if (val.length===4) {
+    if (val===CORRECT) {
+      document.getElementById('pin-screen').style.transition='opacity 0.4s';
+      document.getElementById('pin-screen').style.opacity='0';
+      setTimeout(()=>{ document.getElementById('pin-screen').style.display='none'; document.getElementById('app').style.display='block'; }, 400);
+    } else {
+      document.getElementById('pin-error').classList.add('show');
+      digits.forEach(d=>{ d.style.borderColor='#ff6b6b'; d.value=''; });
+      setTimeout(()=>{ document.getElementById('pin-error').classList.remove('show'); digits.forEach(d=>d.style.borderColor=''); digits[0].focus(); }, 1500);
+    }
+  } else {
+    document.getElementById('pin-error').classList.remove('show');
+  }
+}
+
+digits[0].focus();
+
+function logout() {
+  document.getElementById('app').style.display='none';
+  document.getElementById('pin-screen').style.display='flex';
+  document.getElementById('pin-screen').style.opacity='1';
+  digits.forEach(d=>d.value='');
+  digits[0].focus();
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  if(id==='s-compare') updateCompare();
+  if(id==='s-volatility') { selectVol(currentVol); }
+}
+
+function showSubTab(id) {
+  ['tabB','tabLS','tabChart'].forEach(t=>{ document.getElementById(t).style.display=t===id?'block':'none'; });
+  document.querySelectorAll('.sub-tab').forEach((b,i)=>{ b.classList.toggle('active',['tabB','tabLS','tabChart'][i]===id); });
+  if(id==='tabChart') setTimeout(updateCompare,50);
+}
+
+// ═══════════════════════════════════════
+// MATH
+// ═══════════════════════════════════════
+const TAX_DEFAULT=15, ROB_DEFAULT=0.012;
+
+function calcB(rAz, rOb, taxRate) {
+  const myC=[11000,9000,9000,9000,9000,9000,9000,0,0,0,0];
+  const txC=[0,2279,2279,2279,2279,2279,2279,2279,0,0,0];
+  return calcGeneric(myC, txC, rAz, rOb, taxRate, 7, [-11100,-9000,-9000,-9000,-9000,-9000,-9000,0,0,0]);
+}
+
+function calcLS(rAz, rOb, taxRate) {
+  const myC=[65000,0,0,0,0,0,0,0,0,0,0];
+  const txC=[0,0,0,0,0,0,0,0,0,0,0];
+  return calcGeneric(myC, txC, rAz, rOb, taxRate, 7, [-65100,0,0,0,0,0,0,0,0,0]);
+}
+
+function calcGeneric(myC, txC, rAz, rOb, taxRate, azSwitch, irrBase) {
+  let cap=0, rows=[], ends=[];
+  for(let yr=0;yr<=10;yr++){
+    const cs=cap, mc=myC[yr]||0, tc=txC[yr]||0;
+    const rate=yr<azSwitch?rAz:rOb;
+    let interest=0,capEnd=0;
+    if(yr===10){capEnd=cap+mc+tc;interest=0;}
+    else if(yr===0){capEnd=(mc+tc)*(1+rate);interest=(mc+tc)*rate;}
+    else{const b=cap+mc+tc;interest=b*rate;capEnd=b*(1+rate);}
+    cap=capEnd;
+    ends.push(Math.round(cap));
+    rows.push({yr,capStart:yr===0?0:cs,mc,tc,rate,interest,capEnd,
+      isSwitch:yr===azSwitch,isFinal:yr===10,phase:yr<azSwitch?'Az':'Ob'});
+  }
+  const gross=rows[10].capEnd, net=gross*(1-taxRate/100);
+  const flows=[...irrBase, net];
+  return {rows,gross,net,irr:calcIRR(flows),ends};
+}
+
+function calcIRR(flows){
+  let r=0.08;
+  for(let i=0;i<300;i++){
+    let npv=0,dnpv=0;
+    for(let t=0;t<flows.length;t++){const d=Math.pow(1+r,t);npv+=flows[t]/d;dnpv-=t*flows[t]/((1+r)*d);}
+    if(Math.abs(dnpv)<1e-12)break;const s=npv/dnpv;r-=s;if(Math.abs(s)<1e-9)break;
+  }
+  return r*100;
+}
+
+const fmt=v=>'€\u00a0'+Math.round(v).toLocaleString('it-IT');
+const pct=v=>(Math.round(v*10)/10).toFixed(1)+'%';
+
+// ═══════════════════════════════════════
+// COMPARE SECTION
+// ═══════════════════════════════════════
+let growthChartInst=null;
+
+function updateCompare(){
+  const rAz=parseFloat(document.getElementById('rAz').value)/100;
+  const rOb=parseFloat(document.getElementById('rOb').value)/100;
+  const taxRate=parseFloat(document.getElementById('tax').value);
+  document.getElementById('rAzOut').textContent=(rAz*100).toFixed(1)+'%';
+  document.getElementById('rObOut').textContent=(rOb*100).toFixed(1)+'%';
+  document.getElementById('taxOut').textContent=taxRate+'%';
+
+  const b=calcB(rAz,rOb,taxRate);
+  const ls=calcLS(rAz,rOb,taxRate);
+
+  renderPlansGrid(b,ls,document.getElementById('plansGrid'));
+  renderMetrics(b,ls,document.getElementById('metricsGrid'));
+  renderScenGrid(rOb,taxRate,rAz*100);
+  renderTableB(b.rows);
+  renderTableLS(ls.rows);
+
+  if(document.getElementById('tabChart').style.display!=='none') renderGrowthChart(b,ls);
+}
+
+function renderPlansGrid(b,ls,el){
+  const diff=b.net-ls.net,bW=diff>=0;
+  el.innerHTML=`
+    <div class="plan-card ${bW?'winner':''}">
+      ${bW?'<div class="winner-badge">vantaggio</div>':'<div class="alt-badge">alternativa</div>'}
+      <div class="plan-name">Piano B — PAC</div>
+      <div class="plan-desc">Versamenti scaglionati + reinvestimento risparmio fiscale</div>
+      <div class="plan-big ${bW?'green':'blue'}">${fmt(b.net)}</div>
+      <div class="plan-big-label">capitale netto a 10 anni</div>
+      <div class="plan-row"><span>Montante lordo</span><span>${fmt(b.gross)}</span></div>
+      <div class="plan-row"><span>Capitale proprio</span><span>€\u00a065.100</span></div>
+      <div class="plan-row"><span>Contributi fiscali</span><span>€\u00a013.674</span></div>
+      <div class="plan-row"><span>IRR sui propri</span><span>${pct(b.irr)}</span></div>
+    </div>
+    <div class="plan-card ${!bW?'winner':''}">
+      ${!bW?'<div class="winner-badge">vantaggio</div>':'<div class="alt-badge">alternativa</div>'}
+      <div class="plan-name">Una tantum</div>
+      <div class="plan-desc">€ 65.000 versati subito. Nessun versamento successivo.</div>
+      <div class="plan-big ${!bW?'green':'blue'}">${fmt(ls.net)}</div>
+      <div class="plan-big-label">capitale netto a 10 anni</div>
+      <div class="plan-row"><span>Montante lordo</span><span>${fmt(ls.gross)}</span></div>
+      <div class="plan-row"><span>Capitale versato</span><span>€\u00a065.000</span></div>
+      <div class="plan-row"><span>Contributi fiscali</span><span>—</span></div>
+      <div class="plan-row"><span>IRR sul capitale</span><span>${pct(ls.irr)}</span></div>
+    </div>`;
+}
+
+function renderMetrics(b,ls,el){
+  const diff=b.net-ls.net;
+  el.innerHTML=`
+    <div class="metric"><div class="metric-label">Vantaggio piano B</div><div class="metric-value ${diff>=0?'green':'red'}">${diff>=0?'+':''}${fmt(diff)}</div></div>
+    <div class="metric"><div class="metric-label">IRR piano B</div><div class="metric-value blue">${pct(b.irr)}</div></div>
+    <div class="metric"><div class="metric-label">IRR una tantum</div><div class="metric-value blue">${pct(ls.irr)}</div></div>
+    <div class="metric"><div class="metric-label">Extra fiscale reinvestito</div><div class="metric-value gold">€\u00a013.674</div></div>`;
+}
+
+function renderScenGrid(rOb,taxRate,activeRaz){
+  document.getElementById('scenGrid').innerHTML=[6,8,10].map(r=>{
+    const b=calcB(r/100,rOb,taxRate),ls=calcLS(r/100,rOb,taxRate);
+    const diff=b.net-ls.net,bW=diff>=0;
+    const isAct=Math.abs(r-activeRaz)<0.3;
+    return`<div class="scen-card ${isAct?'active':''}">
+      <div class="scen-title">Azionario ${r}% netto</div>
+      <div class="scen-row"><span>Piano B netto</span><span>${fmt(b.net)}</span></div>
+      <div class="scen-row"><span>Tantum netto</span><span>${fmt(ls.net)}</span></div>
+      <div class="scen-row"><span>Differenza</span><span class="${bW?'win':'lose'}">${diff>=0?'+':''}${fmt(diff)}</span></div>
+      <div class="scen-row"><span>IRR piano B</span><span>${pct(b.irr)}</span></div>
+      <div class="scen-row"><span>IRR tantum</span><span>${pct(ls.irr)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderTableB(rows){
+  document.getElementById('tbodyB').innerHTML=rows.map(r=>{
+    const cls=r.isFinal?'final-row':(r.isSwitch?'switch-row':'');
+    const nota=r.isSwitch&&!r.isFinal?' ↔sw':(r.isFinal?' liq.':'');
+    return`<tr class="${cls}">
+      <td>${r.yr}${nota}</td><td>${fmt(r.capStart)}</td>
+      <td>${r.mc>0?fmt(r.mc):'—'}</td><td>${r.tc>0?fmt(r.tc):'—'}</td>
+      <td>${r.isFinal?'—':(r.rate*100).toFixed(1)+'% '+r.phase}</td>
+      <td>${r.interest>0?fmt(r.interest):'—'}</td><td>${fmt(r.capEnd)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTableLS(rows){
+  document.getElementById('tbodyLS').innerHTML=rows.map(r=>{
+    const cls=r.isFinal?'final-row':(r.isSwitch?'switch-row':'');
+    return`<tr class="${cls}">
+      <td>${r.yr}${r.isSwitch&&!r.isFinal?' ↔sw':(r.isFinal?' liq.':'')}</td>
+      <td>${fmt(r.capStart)}</td>
+      <td>${r.mc>0?fmt(r.mc):'—'}</td>
+      <td>${r.isFinal?'—':(r.rate*100).toFixed(1)+'% '+r.phase}</td>
+      <td>${r.interest>0?fmt(r.interest):'—'}</td>
+      <td>${fmt(r.capEnd)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderGrowthChart(b,ls){
+  const labels=b.rows.map(r=>'A'+r.yr);
+  if(growthChartInst) growthChartInst.destroy();
+  growthChartInst=new Chart(document.getElementById('growthChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Piano B',data:b.ends,borderColor:'#1a3a5c',backgroundColor:'rgba(26,58,92,0.06)',tension:0.3,pointRadius:3,borderWidth:2},
+      {label:'Una tantum',data:ls.ends,borderColor:'#2c5f3f',backgroundColor:'rgba(44,95,63,0.05)',tension:0.3,pointRadius:3,borderWidth:2,borderDash:[5,4]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>'€'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(0,0,0,0.05)'}},
+              x:{ticks:{autoSkip:false,maxRotation:0,font:{size:10}},grid:{display:false}}}}
+  });
+}
+
+['rAz','rOb','tax'].forEach(id=>document.getElementById(id).addEventListener('input',updateCompare));
+updateCompare();
+
+// ═══════════════════════════════════════
+// VOLATILITY SECTION
+// ═══════════════════════════════════════
+const SCENARIOS=[
+  {name:'Crash iniziale poi ripresa',rates:[-0.25,-0.20,0.15,0.30,0.35,0.28,0.22],
+   insight:'Il mercato crolla nei primi 2 anni (−25%, −20%) poi recupera con forza. <strong>Il piano B vince nettamente</strong>: i versamenti degli anni 2–6 comprano quote a prezzi scontati, beneficiando del rimbalzo. La una tantum subisce la perdita sull\'intero capitale dal giorno 0.'},
+  {name:'Boom poi correzione finale',rates:[0.25,0.20,0.18,0.15,-0.15,-0.20,0.05],
+   insight:'Mercato forte nei primi anni, poi cede. <strong>La una tantum tende a fare meglio</strong>: il capitale pieno cattura il rally iniziale. Il piano B versa gran parte del capitale negli anni buoni ma non recupera a sufficienza sul finale.'},
+  {name:'V-Shape violento',rates:[-0.35,0.40,-0.20,0.38,-0.15,0.32,0.18],
+   insight:'Oscillazioni violente e frequenti. <strong>Il piano B beneficia massimamente</strong> del dollar-cost averaging: acquista molte quote nei minimi e poche nei massimi, abbassando il costo medio di carico.'},
+  {name:'Laterale con spike',rates:[-0.10,0.08,-0.08,0.35,0.05,-0.10,0.12],
+   insight:'Mercato piatto tranne un picco isolato in anno 4. <strong>Il piano B è avvantaggiato</strong>: i versamenti precedenti al picco godono del rialzo, mentre la una tantum lo cattura interamente ma poi subisce la volatilità sull\'intero montante.'},
+  {name:'Costante 8%',rates:[0.08,0.08,0.08,0.08,0.08,0.08,0.08],
+   insight:'Rendimento costante, nessuna volatilità. <strong>La differenza dipende quasi solo</strong> dai € 13.674 di reinvestimento fiscale del piano B. In assenza di oscillazioni il dollar-cost averaging non offre vantaggi aggiuntivi.'}
+];
+
+let currentVol=0, volChartInst=null, barChartInst=null;
+
+function selectVol(idx){
+  currentVol=idx;
+  document.querySelectorAll('.vol-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const scen=SCENARIOS[idx];
+  const rOb=ROB_DEFAULT, taxRate=TAX_DEFAULT;
+
+  document.getElementById('ratesRow').innerHTML=scen.rates.map((r,i)=>
+    `<div class="rate-cell"><div class="rate-yr">Anno ${i}</div><div class="rate-val ${r>=0?'pos':'neg'}">${r>=0?'+':''}${(r*100).toFixed(0)}%</div></div>`
+  ).join('');
+
+  document.getElementById('volInsight').innerHTML=scen.insight;
+
+  const b=calcBVol(scen.rates,rOb,taxRate);
+  const ls=calcLSVol(scen.rates,rOb,taxRate);
+
+  renderPlansGrid(b,ls,document.getElementById('volPlansGrid'));
+  renderMetrics(b,ls,document.getElementById('volMetricsGrid'));
+
+  const labels=Array.from({length:11},(_,i)=>'A'+i);
+  if(volChartInst) volChartInst.destroy();
+  volChartInst=new Chart(document.getElementById('volChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Piano B',data:b.ends,borderColor:'#1a3a5c',backgroundColor:'rgba(26,58,92,0.06)',tension:0.3,pointRadius:3,borderWidth:2},
+      {label:'Una tantum',data:ls.ends,borderColor:'#2c5f3f',backgroundColor:'rgba(44,95,63,0.05)',tension:0.3,pointRadius:3,borderWidth:2,borderDash:[5,4]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>'€'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(0,0,0,0.05)'}},
+              x:{ticks:{autoSkip:false,maxRotation:0,font:{size:10}},grid:{display:false}}}}
+  });
+
+  const rColors=scen.rates.map(r=>r>=0?'#2c5f3f':'#8b1a1a');
+  if(barChartInst) barChartInst.destroy();
+  barChartInst=new Chart(document.getElementById('barChart'),{
+    type:'bar',
+    data:{labels:scen.rates.map((_,i)=>'A'+i),datasets:[{
+      label:'Rendimento',data:scen.rates.map(r=>+(r*100).toFixed(1)),
+      backgroundColor:rColors,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.05)'},
+        min:Math.min(...scen.rates.map(r=>r*100))*1.3,
+        max:Math.max(...scen.rates.map(r=>r*100))*1.3},
+        x:{ticks:{autoSkip:false,maxRotation:0,font:{size:10}},grid:{display:false}}}}
+  });
+}
+
+function calcBVol(rates,rOb,taxRate){
+  const myC=[11000,9000,9000,9000,9000,9000,9000,0,0,0,0];
+  const txC=[0,2279,2279,2279,2279,2279,2279,2279,0,0,0];
+  let cap=0,ends=[];
+  for(let yr=0;yr<=10;yr++){
+    const mc=myC[yr]||0,tc=txC[yr]||0;
+    const rate=yr<7?rates[yr]:rOb;
+    if(yr===10){cap=cap+mc+tc;}
+    else if(yr===0){cap=(mc+tc)*(1+rate);}
+    else{cap=(cap+mc+tc)*(1+rate);}
+    ends.push(Math.round(cap));
+  }
+  const gross=cap,net=gross*(1-taxRate/100);
+  const flows=[-11100,-9000,-9000,-9000,-9000,-9000,-9000,0,0,0,net];
+  return{gross,net,irr:calcIRR(flows),ends};
+}
+
+function calcLSVol(rates,rOb,taxRate){
+  let cap=65000,ends=[];
+  for(let yr=0;yr<=10;yr++){
+    const rate=yr<7?rates[yr]:rOb;
+    if(yr===10){}
+    else if(yr===0){cap=65000*(1+rate);}
+    else{cap=cap*(1+rate);}
+    ends.push(Math.round(cap));
+  }
+  const gross=cap,net=gross*(1-taxRate/100);
+  const flows=[-65100,0,0,0,0,0,0,0,0,0,net];
+  return{gross,net,irr:calcIRR(flows),ends};
+}
+
+// init volatility on load
+setTimeout(()=>selectVol(0),100);
+</script>
+</body>
+</html>
